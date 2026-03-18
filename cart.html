@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="AuraBooks Səbət — Seçdiyiniz kitabları burada görə bilərsiniz." />
+    <title>Səbətim | Aura Books</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- ===================== HEADER ===================== -->
+<header role="banner">
+    <nav class="navbar" role="navigation" aria-label="Əsas naviqasiya">
+
+        <a href="index.html" class="logo" aria-label="AuraBooks Ana Səhifə">
+            Aura<span>Books</span>
+        </a>
+
+        <!-- Mobile hamburger -->
+        <button
+            class="hamburger"
+            id="hamburger-btn"
+            aria-label="Menyunu aç/bağla"
+            aria-expanded="false"
+            aria-controls="nav-links"
+        >
+            <span></span><span></span><span></span>
+        </button>
+
+        <ul class="nav-links" id="nav-links" role="list">
+            <li><a href="index.html">Ana Səhifə</a></li>
+            <li>
+                <a href="cart.html" class="cart-link" aria-label="Səbətim" aria-current="page">
+                    🛒 Səbət
+                    <span id="cart-count" aria-live="polite" aria-atomic="true">0</span>
+                </a>
+            </li>
+        </ul>
+
+    </nav>
+</header>
+
+<!-- ===================== MAIN ===================== -->
+<main id="main-content" class="cart-page page-grid">
+    <div class="cart-container" id="cart-container">
+        <!-- Dynamically filled by JS -->
+    </div>
+</main>
+
+<!-- ===================== TOAST CONTAINER ===================== -->
+<div id="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+<!-- ===================== FOOTER ===================== -->
+<footer class="footer" role="contentinfo">
+    <div class="footer-logo">Aura<span>Books</span></div>
+    <p class="footer-copy">© 2026 AuraBooks. Bütün hüquqlar qorunur.</p>
+</footer>
+
+<!-- ===================== SCRIPTS ===================== -->
+<!-- Load shared data first, then cart logic -->
+<script src="data.js"></script>
+<script>
+    /* -------------------------------------------------------
+       Cart Utilities  (duplicated here intentionally because
+       cart.html is a standalone page — no module bundler)
+       ------------------------------------------------------- */
+
+    function getCart() {
+        try {
+            return JSON.parse(localStorage.getItem('aura_cart')) || {};
+        } catch {
+            return {};
+        }
+    }
+
+    function saveCart(cart) {
+        localStorage.setItem('aura_cart', JSON.stringify(cart));
+    }
+
+    function getCartItemCount() {
+        return Object.values(getCart()).reduce((sum, qty) => sum + qty, 0);
+    }
+
+    function updateCartBadge() {
+        const el = document.getElementById('cart-count');
+        if (el) el.textContent = getCartItemCount();
+    }
+
+    /* -------------------------------------------------------
+       Toast
+       ------------------------------------------------------- */
+    function showToast(message, type = 'success', duration = 2800) {
+        const container = document.getElementById('toast-container');
+        if (!container) return;
+        const icons = { success: '✓', error: '✕', info: 'ℹ' };
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+        toast.setAttribute('role', 'alert');
+        toast.innerHTML = `<strong>${icons[type] || '•'}</strong> ${message}`;
+        container.appendChild(toast);
+        const removeToast = () => {
+            toast.classList.add('toast-out');
+            toast.addEventListener('animationend', () => toast.remove(), { once: true });
+        };
+        const timer = setTimeout(removeToast, duration);
+        toast.addEventListener('click', () => { clearTimeout(timer); removeToast(); });
+    }
+
+    /* -------------------------------------------------------
+       Hamburger
+       ------------------------------------------------------- */
+    function initHamburger() {
+        const btn   = document.getElementById('hamburger-btn');
+        const links = document.getElementById('nav-links');
+        if (!btn || !links) return;
+        btn.addEventListener('click', () => {
+            const isOpen = links.classList.toggle('is-open');
+            btn.classList.toggle('is-active', isOpen);
+            btn.setAttribute('aria-expanded', String(isOpen));
+        });
+        links.querySelectorAll('a').forEach(a => a.addEventListener('click', () => {
+            links.classList.remove('is-open');
+            btn.classList.remove('is-active');
+            btn.setAttribute('aria-expanded', 'false');
+        }));
+    }
+
+    /* -------------------------------------------------------
+       Cart Quantity Helpers
+       ------------------------------------------------------- */
+
+    function changeQty(bookId, delta) {
+        const cart = getCart();
+        const newQty = (cart[bookId] || 0) + delta;
+        if (newQty <= 0) {
+            delete cart[bookId];
+        } else {
+            cart[bookId] = newQty;
+        }
+        saveCart(cart);
+        renderCart(); // Re-render the whole cart
+        updateCartBadge();
+    }
+
+    function removeItem(bookId) {
+        const cart = getCart();
+        delete cart[bookId];
+        saveCart(cart);
+        renderCart();
+        updateCartBadge();
+        showToast('Məhsul səbətdən silindi.', 'info');
+    }
+
+    function clearCart() {
+        if (!confirm('Səbəti tamamilə təmizləmək istədiyinizə əminsiniz?')) return;
+        localStorage.removeItem('aura_cart');
+        renderCart();
+        updateCartBadge();
+        showToast('Səbət təmizləndi.', 'info');
+    }
+
+    function checkout() {
+        const cart = getCart();
+        if (Object.keys(cart).length === 0) {
+            showToast('Səbətiniz boşdur!', 'error');
+            return;
+        }
+        // Simulate checkout
+        localStorage.removeItem('aura_cart');
+        showToast('🎉 Sifarişiniz qəbul olundu! Təbriklər!', 'success', 3500);
+        setTimeout(() => {
+            window.location.href = 'index.html';
+        }, 3600);
+    }
+
+    /* -------------------------------------------------------
+       Render Cart
+       ------------------------------------------------------- */
+    function renderCart() {
+        const container = document.getElementById('cart-container');
+        if (!container) return;
+
+        const cart = getCart(); // { bookId: qty }
+        const cartEntries = Object.entries(cart)
+            .map(([id, qty]) => ({ book: BOOKS_DATA.find(b => b.id === parseInt(id)), qty: parseInt(qty) }))
+            .filter(entry => entry.book); // skip stale IDs
+
+        /* ---------- EMPTY STATE ---------- */
+        if (cartEntries.length === 0) {
+            container.innerHTML = `
+                <div class="empty-cart" role="status" aria-live="polite">
+                    <span class="empty-icon" aria-hidden="true">🛒</span>
+                    <h3>Səbətiniz boşdur</h3>
+                    <p>Kitab seçin və səbətinizə əlavə edin.</p>
+                    <a href="index.html" class="btn-shop">
+                        📚 Kitablara bax
+                    </a>
+                </div>
+            `;
+            return;
+        }
+
+        /* ---------- ITEMS + SUMMARY ---------- */
+        let subtotal = 0;
+        const itemsHtml = cartEntries.map(({ book, qty }) => {
+            const lineTotal = book.price * qty;
+            subtotal += lineTotal;
+            return `
+                <div class="cart-item" data-id="${book.id}">
+                    <img
+                        class="cart-item-img"
+                        src="${book.img}"
+                        alt="${escapeHtml(book.title)}"
+                        loading="lazy"
+                        onerror="this.src=''; this.style.background='linear-gradient(135deg,#f0f1ff,#e8ecff)';"
+                    />
+                    <div class="cart-item-info">
+                        <h4>${escapeHtml(book.title)}</h4>
+                        <p class="item-author">${escapeHtml(book.author)}</p>
+                    </div>
+                    <div class="qty-control" aria-label="Miqdar: ${qty}">
+                        <button
+                            class="qty-btn"
+                            onclick="changeQty(${book.id}, -1)"
+                            aria-label="Miqdarı azalt"
+                            ${qty <= 1 ? '' : ''}
+                        >−</button>
+                        <span class="qty-value" aria-label="Miqdar ${qty}">${qty}</span>
+                        <button
+                            class="qty-btn"
+                            onclick="changeQty(${book.id}, 1)"
+                            aria-label="Miqdarı artır"
+                        >+</button>
+                    </div>
+                    <span class="cart-item-price" aria-label="$${lineTotal}">$${lineTotal}</span>
+                    <button
+                        class="remove-btn"
+                        onclick="removeItem(${book.id})"
+                        aria-label="${book.title} kitabını sil"
+                        title="Sil"
+                    >🗑</button>
+                </div>
+            `;
+        }).join('');
+
+        const shipping = subtotal > 40 ? 0 : 5;
+        const total    = subtotal + shipping;
+
+        container.innerHTML = `
+            <h2>Səbətimdəki Məhsullar
+                <span style="font-size: 1rem; font-weight: 500; color: var(--text-secondary);">
+                    (${cartEntries.reduce((s, e) => s + e.qty, 0)} məhsul)
+                </span>
+            </h2>
+
+            <div id="cart-items-list" aria-label="Səbət məhsulları" role="list">
+                ${itemsHtml}
+            </div>
+
+            <div class="cart-summary" aria-label="Ödəniş xülasəsi">
+                <div class="cart-summary-row">
+                    <span>Ara cəm</span>
+                    <span>$${subtotal.toFixed(2)}</span>
+                </div>
+                <div class="cart-summary-row">
+                    <span>Çatdırılma</span>
+                    <span>${shipping === 0
+                        ? '<span style="color:var(--success);font-weight:600;">Pulsuz ✓</span>'
+                        : '$' + shipping.toFixed(2)
+                    }</span>
+                </div>
+                ${shipping > 0 ? `
+                    <p style="font-size:0.78rem;color:var(--text-muted);margin-top:4px;">
+                        💡 $40-dan yuxarı sifarişlərdə çatdırılma pulsuzdur.
+                    </p>` : ''}
+                <div class="cart-summary-row total">
+                    <span>Cəmi</span>
+                    <span>$${total.toFixed(2)}</span>
+                </div>
+            </div>
+
+            <div class="cart-actions">
+                <button class="btn-clear" onclick="clearCart()" aria-label="Səbəti tamamilə təmizlə">
+                    🗑 Səbəti təmizlə
+                </button>
+                <button class="btn-checkout" onclick="checkout()" aria-label="Ödənişə keç">
+                    💳 Ödəniş et →
+                </button>
+            </div>
+        `;
+    }
+
+    /* -------------------------------------------------------
+       Security
+       ------------------------------------------------------- */
+    function escapeHtml(str) {
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
+
+    /* -------------------------------------------------------
+       Scroll Shadow for Navbar
+       ------------------------------------------------------- */
+    function initScrollShadow() {
+        const navbar = document.querySelector('.navbar');
+        if (!navbar) return;
+        const h = () => navbar.classList.toggle('scrolled', window.scrollY > 10);
+        window.addEventListener('scroll', h, { passive: true });
+        h();
+    }
+
+    /* -------------------------------------------------------
+       Initialise
+       ------------------------------------------------------- */
+    document.addEventListener('DOMContentLoaded', () => {
+        renderCart();
+        updateCartBadge();
+        initHamburger();
+        initScrollShadow();
+    });
+</script>
+
+</body>
+</html>

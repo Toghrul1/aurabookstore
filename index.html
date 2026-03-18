@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="AuraBooks — Premium kitab mağazası. Seçilmiş əsərlər, sürətli çatdırılma." />
+    <!-- Open Graph -->
+    <meta property="og:title"       content="Aura Books | Premium Store" />
+    <meta property="og:description" content="Premium mütaliə təcrübəsini yaşayın." />
+    <meta property="og:type"        content="website" />
+
+    <title>Aura Books | Premium Store</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- ===================== HEADER / NAVBAR ===================== -->
+<header role="banner">
+    <nav class="navbar" role="navigation" aria-label="Əsas naviqasiya">
+
+        <a href="index.html" class="logo" aria-label="AuraBooks Ana Səhifə">
+            Aura<span>Books</span>
+        </a>
+
+        <!-- Mobile hamburger button -->
+        <button
+            class="hamburger"
+            id="hamburger-btn"
+            aria-label="Menyunu aç/bağla"
+            aria-expanded="false"
+            aria-controls="nav-links"
+        >
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+
+        <ul class="nav-links" id="nav-links" role="list">
+            <li><a href="index.html" aria-current="page">Ana Səhifə</a></li>
+            <li>
+                <a href="cart.html" class="cart-link" aria-label="Səbətim">
+                    🛒 Səbət
+                    <span id="cart-count" aria-live="polite" aria-atomic="true">0</span>
+                </a>
+            </li>
+        </ul>
+
+    </nav>
+</header>
+
+<!-- ===================== MAIN CONTENT ===================== -->
+<main id="main-content" class="page-grid">
+
+    <!-- Hero Section -->
+    <section class="hero full-bleed" aria-labelledby="hero-heading">
+        <div class="hero-badge" aria-hidden="true">Yeni Kolleksiya 2026</div>
+        <h1 id="hero-heading">Hər Səhifədə <span>Yeni Bir Dünya</span></h1>
+        <p>
+            AuraBooks ilə premium mütaliə təcrübəsini yaşayın.
+            Seçilmiş əsərlər, sürətli çatdırılma və sizin üçün
+            özəl hazırlanmış kolleksiya.
+        </p>
+    </section>
+
+    <!-- Books Section -->
+    <section class="books-section" aria-labelledby="books-heading">
+        <h2 class="section-title" id="books-heading">
+            Bütün <span>Kitablar</span>
+        </h2>
+        <div id="book-list" class="books-grid" role="list" aria-label="Kitab siyahısı">
+            <!-- JS ile render edilecek -->
+        </div>
+    </section>
+
+</main>
+
+<!-- ===================== BOOK DETAIL MODAL ===================== -->
+<div
+    id="book-modal"
+    class="modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="modal-title"
+    aria-hidden="true"
+>
+    <div class="modal-content" id="modal-body">
+        <!-- JS ile doldurulacak -->
+    </div>
+</div>
+
+<!-- ===================== TOAST CONTAINER ===================== -->
+<div id="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+<!-- ===================== FOOTER ===================== -->
+<footer class="footer" role="contentinfo">
+    <div class="footer-logo">Aura<span>Books</span></div>
+    <p class="footer-copy">© 2026 AuraBooks. Bütün hüquqlar qorunur.</p>
+</footer>
+
+<!-- ===================== SCRIPTS ===================== -->
+<script src="data.js"></script>
+<script src="script.js"></script>
+
+</body>
+</html>
